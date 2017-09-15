@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ceshi</title>
+    <link rel="stylesheet" href="css.css">
+</head>
+<body>
+<div class="main">
+    <table id="tab" cellpadding="0" cellspacing="0">
+        <thead>
+        <tr>
+            <td class="point">姓名</td>
+            <td class="point">年龄</td>
+            <td class="point">伤害值</td>
+            <td>性别</td>
+        </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+</div>
+<script src="js/utils.js" charset="utf-8"></script>
+<script>
+    var tab = document.getElementById("tab");
+    var headR = tab.tHead;
+    var Thea = headR.rows[0];
+    /*console.log(Thea);*/
+    var ths = Thea.cells;
+    /*console.log(ths);*/
+    var tbody = tab.tBodies[0];
+    var th = tbody.rows;
+    //console.log(th);
+
+    var data = null;
+    var xhr = new XMLHttpRequest();
+    xhr.open("get", "ajaxDate.txt", false);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            data = utils.jsonParse(xhr.responseText);
+        }
+    };
+    xhr.send(null);
+    //console.log(data);
+    function bindData() {
+        var frg = document.createDocumentFragment();
+        for (var i = 0; i < data.length; i++) {
+            var tr = document.createElement("tr");
+            var cur = data[i];
+            for (key in cur) {
+                var td = document.createElement("td");
+                key === "sex" ? td.innerHTML = cur[key] == "0" ? "女" : "男" : td.innerHTML = cur[key];
+                tr.appendChild(td);
+            }
+            frg.appendChild(tr);
+        }
+        tbody.appendChild(frg);
+        frg = null;
+    }
+    bindData();
+    function sort(n) {
+        for (var j = 0; j < ths.length; j++) {
+            if (ths[j] != this) {
+                ths[j].flag = -1;
+            }
+        }
+        var ary = Array.prototype.slice.call(th);
+        var _this = this;
+        _this.flag *= -1;
+        ary.sort(function (a, b) {
+            var curInner = a.cells[n].innerHTML, nextInner = b.cells[n].innerHTML, curInnerNum = parseFloat(a.cells[n].innerHTML), nextInnerNum = parseFloat(b.cells[n].innerHTML);
+            if (isNaN(curInner) || isNaN(nextInner)) {
+                return curInner.localeCompare(nextInner) * _this.flag;
+            }
+            return (curInnerNum - nextInnerNum) * _this.flag;
+        });
+        var frg = document.createDocumentFragment();
+        for (var i = 0; i < ary.length; i++) {
+            frg.appendChild(ary[i]);
+        }
+        tbody.appendChild(frg);
+        frg = null;
+        changeColor();
+    }
+    for (var i = 0; i < ths.length; i++) {
+        var cur = ths[i];
+        cur.index = i;
+        cur.flag = -1;
+        if (cur.className === "point") {
+            cur.onclick = function () {
+                sort.call(this, this.index);
+            };
+        }
+
+    }
+
+    function changeColor() {
+        for (var i = 0; i < th.length; i++) {
+            th[i].className = i % 2 == 0 ? "bg" : null;
+        }
+    }
+    changeColor();
+</script>
+</body>
+</html>
